@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+    <title>IP LOOKUP • MR LAZY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500;700;900&family=Roboto+Mono:wght@300;400;700&display=swap" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0d0d0d;
+            color: #00ff41;
+            font-family: 'Roboto Mono', monospace;
+            overflow-y: auto; /* স্ক্রলিং এনাবল করা হয়েছে */
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(0,255,65,0.06) 0%, transparent 25%),
+                radial-gradient(circle at 90% 80%, rgba(0,255,65,0.04) 0%, transparent 35%);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"><circle cx="8" cy="8" r="4" fill="%2300ff41" opacity="0.7"/></svg>'), auto;
+            font-size: 14px; /* ফন্ট সাইজ ছোট করা */
+        }
+
+        .matrix-rain {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            pointer-events: none;
+            z-index: 1;
+            opacity: 0.15;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            max-width: 900px; /* ছোট স্ক্রিনের জন্য অ্যাডজাস্ট */
+            margin: 0 auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            text-align: center;
+            padding: 20px 0; /* প্যাডিং কমানো */
+        }
+
+        .title {
+            font-family: 'Orbitron', sans-serif;
+            font-size: clamp(1.5rem, 5vw, 3rem); /* সাইজ ছোট এবং রেসপন্সিভ */
+            font-weight: 900;
+            letter-spacing: 4px; /* স্পেসিং কমানো */
+            background: linear-gradient(90deg, #00ff41, #00ccff, #ff00aa, #00ff41);
+            background-size: 300% 300%;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            animation: gradientFlow 12s ease infinite;
+            text-shadow: 0 0 15px rgba(0,255,65,0.4); /* শ্যাডো কমানো */
+        }
+
+        @keyframes gradientFlow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .subtitle {
+            margin-top: 5px;
+            font-size: 0.9rem; /* ছোট করা */
+            opacity: 0.7;
+            letter-spacing: 1px;
+        }
+
+        .lang-switch {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            z-index: 20;
+        }
+
+        .lang-btn {
+            background: rgba(0,255,65,0.08);
+            border: 1px solid #00ff41;
+            color: #00ff41;
+            padding: 6px 12px; /* ছোট করা */
+            border-radius: 4px;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 500;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.25s;
+        }
+
+        .lang-btn:hover, .lang-btn.active {
+            background: #00ff41;
+            color: #000;
+            box-shadow: 0 0 15px #00ff41aa; /* শ্যাডো কমানো */
+            transform: scale(1.05);
+        }
+
+        .input-area {
+            text-align: center;
+            margin: 0 auto 30px;
+            max-width: 500px; /* ছোট করা */
+            position: relative;
+        }
+
+        #ip-input {
+            width: 100%;
+            padding: 12px 20px 12px 50px; /* প্যাডিং কমানো */
+            font-size: 1rem; /* ছোট করা */
+            background: rgba(0,0,0,0.6);
+            border: 2px solid #004d1a;
+            border-radius: 8px;
+            color: #00ff41;
+            font-family: 'Roboto Mono', monospace;
+            transition: all 0.3s;
+        }
+
+        #ip-input:focus {
+            outline: none;
+            border-color: #00ff41;
+            box-shadow: 0 0 20px rgba(0,255,65,0.25); /* শ্যাডো কমানো */
+            background: rgba(0,20,10,0.75);
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 1.2rem; /* ছোট করা */
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        #fetch-btn {
+            margin-top: 15px;
+            padding: 10px 40px; /* ছোট করা */
+            font-size: 1rem;
+            font-family: 'Orbitron', sans-serif;
+            background: linear-gradient(45deg, #004d1a, #00802b);
+            color: #00ff41;
+            border: 2px solid #00ff41;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.4s;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            box-shadow: 0 0 15px rgba(0,255,65,0.15); /* শ্যাডো কমানো */
+        }
+
+        #fetch-btn:hover {
+            background: linear-gradient(45deg, #00b33c, #00ff41);
+            color: #000;
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0,255,65,0.4);
+        }
+
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 1rem; /* ছোট করা */
+            margin: 40px 0;
+            color: #00ff41;
+            text-shadow: 0 0 10px #00ff41;
+        }
+
+        .spinner {
+            width: 20px; /* ছোট করা */
+            height: 20px;
+            border: 3px solid #004d1a;
+            border-top: 3px solid #00ff41;
+            border-radius: 50%;
+            animation: spin 0.9s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .info-section {
+            background: rgba(0,10,5,0.55);
+            border: 1px solid #004d1a;
+            border-radius: 12px;
+            padding: 25px; /* প্যাডিং কমানো */
+            backdrop-filter: blur(6px);
+            box-shadow: 0 0 30px rgba(0,255,65,0.1);
+            margin-bottom: 40px; /* স্পেস যোগ করা স্ক্রলের জন্য */
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 15px; /* ছোট করা */
+            border-bottom: 1px solid #004d1a;
+            font-size: 0.9rem; /* ছোট করা */
+            transition: all 0.2s;
+        }
+
+        .info-row:hover {
+            background: rgba(0,255,65,0.06);
+            transform: translateX(5px); /* ট্রান্সফর্ম কমানো */
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .label {
+            color: #00cc33;
+            font-weight: bold;
+            min-width: 140px; /* ছোট করা */
+        }
+
+        .value {
+            color: #e0ffe0;
+            word-break: break-all;
+        }
+
+        .note {
+            margin-top: 20px;
+            padding: 12px 18px; /* ছোট করা */
+            background: rgba(0,255,65,0.04);
+            border-left: 4px solid #00ff41;
+            font-size: 0.85rem; /* ছোট করা */
+            line-height: 1.5;
+            border-radius: 0 6px 6px 0;
+        }
+
+        .error-box {
+            background: rgba(255,40,40,0.15);
+            border: 1px solid #880000;
+            color: #ff6666;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 30px auto;
+            max-width: 600px;
+            text-align: center;
+            font-size: 0.9rem;
+        }
+
+        footer {
+            padding: 20px 0; /* ছোট করা */
+            text-align: center;
+            font-size: 0.8rem;
+            opacity: 0.6;
+            letter-spacing: 1px;
+        }
+
+        /* রেসপন্সিভ ডিজাইন */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+            header {
+                padding: 15px 0;
+            }
+            .input-area {
+                max-width: 100%;
+            }
+            .info-row {
+                flex-direction: column;
+                gap: 4px;
+                padding: 12px;
+            }
+            .label { min-width: auto; }
+            .lang-switch {
+                top: 10px;
+                right: 10px;
+                gap: 6px;
+            }
+            .lang-btn {
+                padding: 5px 10px;
+                font-size: 0.7rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                font-size: 12px;
+            }
+            .title {
+                font-size: clamp(1.2rem, 6vw, 2.5rem);
+            }
+            #ip-input {
+                padding: 10px 15px 10px 40px;
+                font-size: 0.9rem;
+            }
+            .input-icon {
+                left: 12px;
+                font-size: 1rem;
+            }
+            #fetch-btn {
+                padding: 8px 30px;
+                font-size: 0.9rem;
+            }
+            .info-section {
+                padding: 20px;
+            }
+            .info-row {
+                font-size: 0.8rem;
+            }
+            .note {
+                font-size: 0.75rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<canvas class="matrix-rain" id="matrix"></canvas>
+
+<div class="container">
+
+    <div class="lang-switch">
+        <button class="lang-btn active" onclick="changeLanguage('en')">EN</button>
+        <button class="lang-btn" onclick="changeLanguage('bd')">বাং</button>
+    </div>
+
+    <header>
+        <div class="title" id="page-title">IP LOCKUP</div>
+        <div class="subtitle" id="subtitle">MR LAZY • SYSTEM ACCESS</div>
+    </header>
+
+    <div class="input-area">
+        <div style="position:relative;">
+            <span class="input-icon">█</span>
+            <input type="text" id="ip-input" placeholder="TARGET IP ADDRESS..." autocomplete="off" autocorrect="off" spellcheck="false" />
+        </div>
+        <button id="fetch-btn" onclick="fetchIPInfo()">EXECUTE LOCKUP</button>
+    </div>
+
+    <div id="loading" class="loading hidden">
+        <div class="spinner"></div>
+        <span id="loading-text">INITIALIZING LOCKUP...</span>
+    </div>
+
+    <section id="info-section" class="info-section hidden">
+        <div class="info-row"><span class="label" id="ip-key">TARGET:</span>        <span class="value" id="ip-value">-</span></div>
+        <div class="info-row"><span class="label" id="city-key">CITY:</span>         <span class="value" id="city-value">-</span></div>
+        <div class="info-row"><span class="label" id="region-key">REGION:</span>     <span class="value" id="region-value">-</span></div>
+        <div class="info-row"><span class="label" id="country-key">COUNTRY:</span>   <span class="value" id="country-value">-</span></div>
+        <div class="info-row"><span class="label" id="coords-key">COORDINATES:</span><span class="value" id="coords-value">-</span></div>
+        <div class="info-row"><span class="label" id="timezone-key">TIMEZONE:</span>  <span class="value" id="timezone-value">-</span></div>
+        <div class="info-row"><span class="label" id="isp-key">ASN / ISP:</span>     <span class="value" id="isp-value">-</span></div>
+        <div class="info-row"><span class="label" id="hostname-key">HOSTNAME:</span> <span class="value" id="hostname-value">-</span></div>
+        <div class="info-row"><span class="label" id="privacy-key">ANONYMITY:</span>  <span class="value" id="privacy-value">-</span></div>
+        <div class="info-row"><span class="label" id="type-key">CONNECTION:</span>   <span class="value" id="type-value">-</span></div>
+
+        <div class="note" id="additional-note">
+            LOCKUP data is approximate and derived from public registry information.
+            Accuracy depends on ISP reporting.
+        </div>
+    </section>
+
+    <div id="error-msg" class="error-box hidden"></div>
+
+    <footer>
+        © 2025 – 2026  MR LAZY  •  ALL RIGHTS RESERVED  •  DEVELOPER: MR LAZY
+    </footer>
+
+</div>
+
+<script>
+// ──────────────────────────────────────────────
+//  Matrix Rain Background
+// ──────────────────────────────────────────────
+const canvas = document.getElementById('matrix');
+const ctx = canvas.getContext('2d');
+
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+window.addEventListener('resize', () => {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+});
+
+const chars = '01█▓▒░■□◇◆○●◎※☆★※→←↑↓↔⇄';
+const fontSize = 12; // ছোট করা
+const columns = canvas.width / fontSize;
+
+const drops = Array(Math.floor(columns)).fill(1);
+
+function drawMatrix() {
+    ctx.fillStyle = 'rgba(13,13,13,0.05)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.fillStyle = '#00ff4188';
+    ctx.font = fontSize + 'px monospace';
+
+    for (let i = 0; i < drops.length; i++) {
+        const text = chars[Math.floor(Math.random() * chars.length)];
+        const x = i * fontSize;
+        const y = drops[i] * fontSize;
+
+        ctx.fillText(text, x, y);
+
+        if (y > canvas.height && Math.random() > 0.975)
+            drops[i] = 0;
+
+        drops[i]++;
+    }
+}
+
+setInterval(drawMatrix, 50);
+
+// ──────────────────────────────────────────────
+//  Language & Functionality
+// ──────────────────────────────────────────────
+const translations = {
+    en: {
+        pageTitle: "IP LOCKUP",
+        subtitle: "MR LAZY • SYSTEM ACCESS",
+        placeholder: "TARGET IP ADDRESS...",
+        button: "EXECUTE LOCKUP",
+        loading: "INITIALIZING LOCKUP...",
+        ip: "TARGET:",
+        city: "CITY:",
+        region: "REGION:",
+        country: "COUNTRY:",
+        coords: "COORDINATES:",
+        timezone: "TIMEZONE:",
+        isp: "ASN / ISP:",
+        hostname: "HOSTNAME:",
+        privacy: "ANONYMITY:",
+        type: "CONNECTION:",
+        note: "LOCKUP data is approximate and derived from public registry information.\nAccuracy depends on ISP reporting.",
+        invalid: "INVALID TARGET. ENTER VALID IPv4 ADDRESS.",
+        error: "LOCKUP FAILED. TARGET UNREACHABLE OR API LIMIT REACHED."
+    },
+    bd: {
+        pageTitle: "আইপি লুকআপ",
+        subtitle: "এমআর লেজি • সিস্টেম অ্যাক্সেস",
+        placeholder: "টার্গেট আইপি অ্যাড্রেস...",
+        button: "লুকআপ শুরু করো",
+        loading: "লুকআপ শুরু হচ্ছে...",
+        ip: "টার্গেট:",
+        city: "শহর:",
+        region: "অঞ্চল:",
+        country: "দেশ:",
+        coords: "স্থানাঙ্ক:",
+        timezone: "টাইমজোন:",
+        isp: "ASN / ISP:",
+        hostname: "হোস্টনেম:",
+        privacy: "গোপনীয়তা:",
+        type: "সংযোগ:",
+        note: "ট্রেস ডেটা আনুমানিক এবং পাবলিক রেজিস্ট্রি থেকে সংগৃহীত।\nISP রিপোর্টিং এর উপর নির্ভর করে নির্ভুলতা।",
+        invalid: "অবৈধ টার্গেট। বৈধ IPv4 অ্যাড্রেস দিন।",
+        error: "ট্রেস ব্যর্থ। টার্গেট অপ্রাপ্য অথবা API সীমা অতিক্রম করেছে।"
+    }
+};
+
+let currentLang = 'en';
+
+function changeLanguage(lang) {
+    currentLang = lang;
+    const t = translations[lang];
+
+    document.getElementById('page-title').textContent = t.pageTitle;
+    document.getElementById('subtitle').textContent = t.subtitle;
+    document.getElementById('ip-input').placeholder = t.placeholder;
+    document.getElementById('fetch-btn').textContent = t.button;
+    document.getElementById('loading-text').textContent = t.loading;
+
+    document.getElementById('ip-key').textContent = t.ip;
+    document.getElementById('city-key').textContent = t.city;
+    document.getElementById('region-key').textContent = t.region;
+    document.getElementById('country-key').textContent = t.country;
+    document.getElementById('coords-key').textContent = t.coords;
+    document.getElementById('timezone-key').textContent = t.timezone;
+    document.getElementById('isp-key').textContent = t.isp;
+    document.getElementById('hostname-key').textContent = t.hostname;
+    document.getElementById('privacy-key').textContent = t.privacy;
+    document.getElementById('type-key').textContent = t.type;
+    document.getElementById('additional-note').textContent = t.note;
+
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.lang-btn[onclick="changeLanguage('${lang}')"]`).classList.add('active');
+}
+
+// ──────────────────────────────────────────────
+function isValidIPv4(ip) {
+    return /^(25[0-5]|2[0-4]\d|1?\d{1,2})(\.(25[0-5]|2[0-4]\d|1?\d{1,2})){3}$/.test(ip);
+}
+
+async function fetchIPInfo() {
+    const ip = document.getElementById('ip-input').value.trim();
+    const t = translations[currentLang];
+
+    document.getElementById('error-msg').classList.add('hidden');
+    document.getElementById('info-section').classList.add('hidden');
+    
+    if (!ip) return;
+
+    if (!isValidIPv4(ip)) {
+        document.getElementById('error-msg').textContent = t.invalid;
+        document.getElementById('error-msg').classList.remove('hidden');
+        return;
+    }
+
+    document.getElementById('loading').classList.remove('hidden');
+
+    try {
+        const res = await fetch(`https://ipapi.co/${ip}/json/`);
+        if (!res.ok) throw new Error();
+        const data = await res.json();
+
+        document.getElementById('ip-value').textContent = data.ip || '—';
+        document.getElementById('city-value').textContent = data.city || '—';
+        document.getElementById('region-value').textContent = data.region || '—';
+        document.getElementById('country-value').textContent = data.country_name || '—';
+        document.getElementById('coords-value').textContent = data.latitude && data.longitude 
+            ? `${data.latitude.toFixed(4)}° N, ${data.longitude.toFixed(4)}° E`
+            : '—';
+        document.getElementById('timezone-value').textContent = data.timezone || '—';
+        document.getElementById('isp-value').textContent = data.org || data.asn || '—';
+        document.getElementById('hostname-value').textContent = data.hostname || '—';
+        document.getElementById('privacy-value').textContent = data.vpn ? 'PROXY / VPN DETECTED' : 'NO PROXY / VPN';
+        document.getElementById('type-value').textContent = data.network || '—';
+
+        document.getElementById('info-section').classList.remove('hidden');
+    } catch (e) {
+        document.getElementById('error-msg').textContent = t.error;
+        document.getElementById('error-msg').classList.remove('hidden');
+    } finally {
+        document.getElementById('loading').classList.add('hidden');
+    }
+}
+
+// Enter key support
+document.getElementById('ip-input').addEventListener('keypress', e => {
+    if (e.key === 'Enter') fetchIPInfo();
+});
+
+// Init
+changeLanguage('en');
+</script>
+</body>
+</html>
